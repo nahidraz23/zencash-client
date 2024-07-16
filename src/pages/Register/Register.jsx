@@ -1,15 +1,35 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form"
+import useAxiosPublic from "../../hooks/useAxiosPublic";
+import toast, { Toaster } from "react-hot-toast";
 
 const Register = () => {
+
+    const axiosPublic = useAxiosPublic();
+    const navigate = useNavigate();
+
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm()
 
-    const onsubmit = data => {
-        console.log(data)
+    const onsubmit = async data => {
+        const name = data.name;
+        const email = data.email;
+        const mobile = data.mobile;
+        const pin = data.pin;
+
+        const info = { name, email, mobile, pin }
+
+        await axiosPublic.post('/user', info)
+            .then(() => {
+                toast.success('Registration successfull!');
+                navigate('/')
+            })
+            .catch(() => {
+                toast.error('Registration failed!');
+            })
     }
 
     return (
@@ -44,7 +64,7 @@ const Register = () => {
                         <label className="label">
                             <span className="label-text">Pin</span>
                         </label>
-                        <input {...register("pin", {pattern: /^\d{5}$/})} maxLength={5} type="password" placeholder="password" className="input input-bordered" required />
+                        <input {...register("pin", { pattern: /^\d{5}$/ })} maxLength={5} type="password" placeholder="password" className="input input-bordered" required />
                         {
                             errors.pin && <p className="text-red-600 text-xl font-medium text-center mt-2">Pin must be 5 digit number</p>
                         }
@@ -57,6 +77,10 @@ const Register = () => {
                     <p>Already have an account <Link to={'/'}><span className="text-blue-600 hover:font-medium">Login</span></Link></p>
                 </div>
             </div>
+            <Toaster
+                position="bottom-right"
+                reverseOrder={false}
+            />
         </div>
     );
 };
